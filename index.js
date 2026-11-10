@@ -90,11 +90,11 @@ app.use((req, res) => res.status(404).json({ ok: false, error: "Not found" }));
 fs.mkdirSync(SESSION_ROOT, { recursive: true });
 
 const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`[pixel-session] ${BOT_NAME} generator on :${PORT}`);
+  console.log(`[talkless-session] ${BOT_NAME} generator on :${PORT}`);
   try {
-    console.log(`[pixel-session] baileys = ${require("./lib/wa").__resolved}`);
+    console.log(`[talkless-session] baileys = ${require("./lib/wa").__resolved}`);
   } catch (e) {
-    console.error("[pixel-session] " + e.message);
+    console.error("[talkless-session] " + e.message);
   }
 });
 

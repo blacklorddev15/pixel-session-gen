@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Pixel X Ultra · Session Generator</title>
+<title>TALKLESS ULTRA · Session Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@ html,body{min-height:100%}
 body{font-family:var(--fh);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 body::before{
   content:'';position:fixed;inset:0;z-index:0;
-  background:url('/img/pixel.jpg') center/cover no-repeat;
+  background:url('/img/talkless.jpg') center/cover no-repeat;
   filter:blur(26px) saturate(.7) brightness(.34);
   transform:scale(1.12);opacity:.55;pointer-events:none;
 }
@@ -126,15 +126,15 @@ input[type=text]:focus{border-color:var(--accent2)}
       Pair with QR instead
     </button>
   </div>
-  <span class="topnav-title">Pixel X Ultra</span>
+  <span class="topnav-title">TALKLESS ULTRA</span>
   <span class="topnav-badge">Session</span>
 </nav>
 
 <div class="wrap">
   <div class="hero">
-    <img src="/img/pixel.jpg" alt="Pixel X Ultra">
+    <img src="/img/talkless.jpg" alt="TALKLESS ULTRA">
     <div class="hero-text">
-      <div class="name">PIXEL X ULTRA</div>
+      <div class="name">TALKLESS ULTRA</div>
       <div class="tag">WhatsApp Session Generator</div>
     </div>
   </div>
@@ -207,8 +207,8 @@ input[type=text]:focus{border-color:var(--accent2)}
       <li><span class="n">1</span><span>Pick your <b>country</b> and type the number.</span></li>
       <li><span class="n">2</span><span>Tap <b>Connect WhatsApp</b> — an 8-character code appears.</span></li>
       <li><span class="n">3</span><span>WhatsApp → <b>Linked devices</b> → <b>Link with phone number</b> → type the code.</span></li>
-      <li><span class="n">4</span><span>Pixel X Ultra messages <b>you</b> with your <b>SESSION_ID</b>.</span></li>
-      <li><span class="n">5</span><span>Paste it into <b>SESSION_ID</b> in your <b>.env</b> and restart the bot.</span></li>
+      <li><span class="n">4</span><span>The generator messages <b>you</b> with your session ID.</span></li>
+      <li><span class="n">5</span><span>Paste it into the <b>Talkless</b> Telegram bot with <b>/pastsession</b>.</span></li>
     </ul>
     <div class="note">Pairing an existing WhatsApp account links a new device — your phone stays signed in. The session string is a password: never share it.</div>
   </div>
@@ -411,7 +411,7 @@ input[type=text]:focus{border-color:var(--accent2)}
         }
         if (j.status === "paired") setStatus("amber", "Approved — preparing your session…");
         if (j.status === "delivered") {
-          setStatus("ok", "Done. Your SESSION_ID is in your WhatsApp (Message yourself).");
+          setStatus("ok", "Done. Your session ID is in your WhatsApp DM — send it to the Talkless bot with /pastsession.");
           stopStatusPoll();
           stopKeepAlive();
           $("cancel-btn").textContent = "Pair another number";
@@ -488,7 +488,7 @@ input[type=text]:focus{border-color:var(--accent2)}
         '<ul class="steps">' +
         '<li><span class="n">1</span><span>WhatsApp → <b>Linked devices</b> → <b>Link with phone number</b></span></li>' +
         '<li><span class="n">2</span><span>Type <b>' + j.code + "</b></span></li>" +
-        '<li><span class="n">3</span><span>Wait for the DM with your <b>SESSION_ID</b></span></li>' +
+        '<li><span class="n">3</span><span>Wait for the DM with your <b>session ID</b></span></li>' +
         "</ul>";
       $("copy-code").addEventListener("click", () => {
         navigator.clipboard?.writeText(j.code).then(
@@ -544,7 +544,7 @@ input[type=text]:focus{border-color:var(--accent2)}
         if (j.status === "paired") $("qr-hint").textContent = "Scanned — preparing your session…";
         if (j.status === "delivered") {
           clearInterval(window.__qrTimer);
-          $("qr-hint").textContent = "Done. Your SESSION_ID is in your WhatsApp (Message yourself).";
+          $("qr-hint").textContent = "Done. Your session ID is in your WhatsApp DM — send it to the Talkless bot with /pastsession.";
           stopKeepAlive();
         }
         if (j.status === "failed") {

@@ -1,7 +1,7 @@
 {
-  "name": "pixel-session-gen",
+  "name": "talkless-session-gen",
   "version": "1.0.0",
-  "description": "Pixel X Ultra session generator \u2014 pairing code and QR, renders a SESSION_ID your bot can read directly.",
+  "description": "TALKLESS ULTRA session generator — pairing code and QR, emits a TALKLESS!<base64> session ID the Talkless Telegram bot accepts via /pastsession.",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {

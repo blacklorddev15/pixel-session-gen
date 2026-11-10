@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pixel-session-gen
+    name: talkless-session-gen
     runtime: node
     plan: free
     region: singapore
@@ -12,7 +12,7 @@ services:
       - key: NODE_VERSION
         value: "20.18.1"
       - key: BOT_NAME
-        value: Pixel X Ultra
+        value: TALKLESS ULTRA
       - key: MAX_ACTIVE
         value: "4"
       - key: PER_IP

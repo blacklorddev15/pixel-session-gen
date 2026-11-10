@@ -1,33 +1,71 @@
-# Pixel X Ultra — Session Generator
+# TALKLESS ULTRA — Session Generator
 
-Landing page that pairs a WhatsApp number and hands back a `SESSION_ID` in the
-exact format **Pixel X Ultra** parses. Country picker with 195 dial codes, an
-8-character pairing code, a QR fallback, and live pairing status.
+Landing page that pairs a WhatsApp number and hands back a session ID in the
+exact shape the **Talkless** telegram bot accepts. Country picker with 195 dial
+codes, an 8-character pairing code, a QR fallback, live pairing status.
 
-The page is branded for Pixel X Ultra: the bot's own artwork is the hero and the
-same image is used, blurred and dimmed, as the page background
-(`public/img/pixel.jpg`).
+Branded for TALKLESS ULTRA: the bot artwork is the hero, and the same image is
+used blurred and dimmed as the page background (`public/img/talkless.jpg`).
 
-Rebuilt from `EliteProTech/ELITEPRO-SESSION-ID` with three changes that matter:
+## What the bot accepts
 
-1. **Format matches the bot.** The bot's `parseSessionId()` strips only
-   `data:application/json;base64,` and `base64:` prefixes before decoding. It does
-   **not** understand `Pixel~` / `PXU-` prefixes, so this generator emits **plain
-   base64 of `creds.json`** — the one shape that always parses. Raw one-line JSON
-   is also accepted by the bot if you prefer to paste that.
+`talkless/src/helper/sessionId.js` strips code fences and any `<brand>!` token,
+then Base64-decodes and JSON-parses. So **all of these parse**:
+
+| Paste | Result |
+|---|---|
+| `TALKLESS!eyJub2lz…` | what this generator emits (default) |
+| `eyJub2lz…` | bare Base64 |
+| `Pixel!eyJ…` / `Blacklord!` / `Varnox!` | other brand prefixes |
+| ```` ```json\n eyJ… \n``` ```` | fenced Base64 |
+| `{"creds":{…}}` or a raw `creds.json` | parsed as JSON |
+
+Set `SESSION_PREFIX=` (empty) to emit bare Base64, or any other token to change
+the label. The prefix is cosmetic — it does not change the payload.
+
+Only `creds.me.id` is mandatory for the bot; missing `noiseKey` /
+`signedIdentityKey` / `signedPreKey` / `advSecretKey` / `registered` is reported
+as a warning and the import still runs.
+
+## How it behaves
+
+1. User enters a number → `GET /code?number=…` returns the 8-char code instantly.
+2. They enter it in **WhatsApp → Linked devices → Link with phone number**.
+3. On `connection open` the app waits for a complete `creds.json`, base64-encodes
+   it, and **DMs it to that same account** ("Message yourself") as two messages:
+   the one-line session ID, then the paste instructions.
+4. The socket is closed and `routes/session/<id>/` is deleted. Nothing persists.
+
+The session is never returned over HTTP — only to the account that paired.
+
+## Wiring it to the bot
+
+The DM tells the user to send the string to the Talkless bot with `/pastsession`
+(or the 💾 **𝑷𝑨𝑺𝑻𝑬 𝑺𝑬𝑺𝑺𝑰𝑶𝑵 𝑰𝑫** keyboard button). The bot then writes
+`sessions/wa_<telegramId>_<phone>/creds.json` and connects immediately — no QR,
+no second pairing code, no `.env` editing.
+
+Talkless is a multi-session Telegram host, so there is no `SESSION_ID` env var:
+the session belongs to whoever pastes it, keyed by their Telegram id.
+
+## Rebuilt from `EliteProTech/ELITEPRO-SESSION-ID`
+
+Three changes that matter:
+
+1. **Format matches the bot.** Output is `TALKLESS!` + plain Base64 of
+   `creds.json`, which the bot's parser handles without special-casing.
 2. **No side effects on the paired account.** The original calls
-   `groupAcceptInvite("Jx5g9WIAzFe4BPB3tXLzCU")` on every successful pairing, which
-   force-adds the user to the author's group, plus a `newsletterFollow(...)`. Both
-   are removed here. Nothing is joined, nothing is followed.
-3. **Built for Render's free plan.** It respects `PORT`, starts with plain
-   `node index.js` (no pm2), and the page pings `/keepalive` while a pairing is in
-   flight so the service isn't spun down mid-handoff.
+   `groupAcceptInvite("Jx5g9WIAzFe4BPB3tXLzCU")` on every successful pairing,
+   force-adding the user to the author's group, plus a `newsletterFollow(...)`.
+   Both are removed here. Nothing is joined, nothing is followed.
+3. **Built for Render's free plan.** Respects `PORT`, starts with plain
+   `node index.js` (no pm2), and the page pings `/keepalive` while a pairing is
+   in flight so the service isn't spun down mid-handoff.
 
-**Baileys: `@whiskeysockets/baileys@6.7.24` only.** This is the build the
-original Elite session generator pairs with, and it is the one that reliably
-issues a code and completes the link. No resolver, no fallback — a second build
-on disk is how you get a code that is issued but never finishes. The `creds.json`
-it writes is plain JSON and loads fine on the bot's 7.x fork.
+**Baileys: `@whiskeysockets/baileys@6.7.24` only.** This is the build that
+reliably issues a code and completes the link. No resolver, no fallback — a
+second build on disk is how you get a code that is issued but never finishes.
+The `creds.json` it writes is plain JSON and loads fine on the bot's 7.x fork.
 
 Three things in `routes/pair.js` exist purely to stop "stuck on login":
 
@@ -66,7 +104,8 @@ Add env vars if you want to override the defaults:
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
-| `BOT_NAME` | `Pixel X Ultra` | Shown on the page and in the DM |
+| `BOT_NAME` | `TALKLESS ULTRA` | Shown on the page and in the DM |
+| `SESSION_PREFIX` | `TALKLESS!` | Prefix before the Base64 payload; empty = bare Base64 |
 | `MAX_ACTIVE` | `4` | Concurrent pairing sockets (free 512 MB dies above ~5) |
 | `PER_IP` | `3` | Pairing attempts per IP |
 | `WINDOW_MS` | `600000` | Rate-limit window (10 min) |
@@ -74,25 +113,12 @@ Add env vars if you want to override the defaults:
 | `LINK_TIMEOUT_MS` | `300000` | How long a code stays usable |
 | `MAX_CODE_RETRIES` | `2` | Re-issues after a dropped socket |
 
----
-
-## How it behaves
-
-1. User enters a number → `GET /code?number=…` returns the 8-char code instantly.
-2. They enter it in **WhatsApp → Linked devices → Link with phone number**.
-3. On `connection open` the app waits for a complete `creds.json`, base64-encodes
-   it, and **DMs it to that same account** ("Message yourself") as two messages:
-   the one-line `SESSION_ID`, then the paste instructions.
-4. The socket is closed and `routes/session/<id>/` is deleted. Nothing persists.
-
-The session is never returned over HTTP — only to the account that paired.
-
 ## Free-plan limits you should expect
 
 - Spins down after **15 minutes** with no inbound traffic; cold start ≈ 1 min.
   While a pairing is open the page's `/keepalive` ping keeps it warm.
-- Ephemeral disk — but that's fine here, since the session folder lives for
-  under two minutes and is deleted either way.
+- Ephemeral disk — fine here, since the session folder lives for under two
+  minutes and is deleted either way.
 - **750 instance hours/month** per workspace. One always-warm service is ~744 h,
   so a second free service would eat into the same allowance.
 - A spin-down or restart **during** a pairing loses that attempt; the user just
@@ -122,7 +148,7 @@ The session is never returned over HTTP — only to the account that paired.
 
 ## Security notes
 
-- Whoever holds the `SESSION_ID` controls that WhatsApp account — treat it like a
+- Whoever holds the session ID controls that WhatsApp account — treat it like a
   password. The DM goes to the account owner only; the page never displays it.
 - While pairing, `creds.json` exists briefly on the server's disk under
   `routes/session/<random-id>/`. It is removed on every exit path, including errors.
